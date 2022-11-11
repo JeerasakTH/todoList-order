@@ -98,3 +98,35 @@ exports.deleteOrder = async (req, res, next) => {
     });
   }
 };
+
+exports.orderReport = async (req, res, next) => {
+  try {
+    const report = await Order.aggregate([
+      {
+        $group: {
+          _id: "$date",
+          numOrder: { $sum: "$quantity" },
+          avgOrder: { $avg: "$quantity" },
+        },
+      },
+      {
+        $sort: {
+          _id: -1,
+          avgOrder: -1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        report,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: "fail",
+      message: err,
+    });
+  }
+};
